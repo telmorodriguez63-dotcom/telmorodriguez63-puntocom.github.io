@@ -1,5 +1,6 @@
-const API_URL_LAVADOS = "http://192.168.40.19:3000/lavados";
-const API_URL_PRESTAMOS = "http://192.168.40.19:3000/prestamos";
+// URLs reales de tu cuenta de MockAPI (Limpias y listas para conectar)
+const API_URL_LAVADOS = "https://6a4886c6a033dcb98d64a1f0.mockapi.io/lavados"; 
+const API_URL_PRESTAMOS = "https://6a4887b3a033dcb98d64a283.mockapi.io/prestamos"; 
 
 const usuariosAutorizados = {
     "oscar": "123456789",
@@ -14,11 +15,9 @@ const mapeoLavadores = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Eventos de botones de sesión
     document.getElementById('btn-ingresar').addEventListener('click', ejecutarLogin);
     document.getElementById('btn-cerrar-sesion').addEventListener('click', cerrarSesion);
     
-    // Acciones de administración
     document.getElementById('btn-registrar').addEventListener('click', registrarLavado);
     document.getElementById('btn-prestamo').addEventListener('click', registrarPrestamo);
     document.getElementById('btn-finalizar').addEventListener('click', finalizarDia);
@@ -31,11 +30,9 @@ function ejecutarLogin() {
     if (contrasenaIngresada === usuariosAutorizados[usuarioSeleccionado.toLowerCase()]) {
         usuarioLogueado = usuarioSeleccionado;
         
-        // Ocultar pantalla de login y mostrar app principal
         document.getElementById('pantalla-login').classList.add('hidden');
         document.getElementById('app-principal').classList.remove('hidden');
         
-        // Colocar nombre en el encabezado
         document.getElementById('nombre-usuario-activo').innerText = usuarioLogueado === "Oscar" ? "Oscar (Administrador)" : `Empleado: ${usuarioLogueado}`;
         
         const vistaEmpleado = document.getElementById('vista-empleado');
@@ -49,7 +46,6 @@ function ejecutarLogin() {
             vistaAdmin.classList.add('hidden');
         }
         
-        // Limpiar el campo de contraseña por seguridad
         document.getElementById('login-password').value = "";
         actualizarPanel();
     } else {
@@ -93,11 +89,11 @@ async function registrarLavado() {
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar lavado:", error);
+        alert("Error al conectar con la base de datos.");
     }
 }
 
 async function registrarPrestamo(evento) {
-    // EVITA RECARGAR LA PÁGINA: Crucial para que no te eche de la sesión al hacer clic
     if (evento && evento.preventDefault) {
         evento.preventDefault();
     }
@@ -120,16 +116,14 @@ async function registrarPrestamo(evento) {
             body: JSON.stringify(nuevoPrestamo)
         });
         
-        if (!respuesta.ok) {
-            throw new Error(`Error del servidor: ${respuesta.status}`);
-        }
+        if (!respuesta.ok) throw new Error(`Error: ${respuesta.status}`);
         
         document.getElementById('monto-prestamo').value = "";
         alert(`Vale de $${monto.toLocaleString()} asignado con éxito a ${lavador}`);
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar préstamo:", error);
-        alert("⚠️ Error de conexión con la base de datos. Verifica que json-server esté corriendo.");
+        alert("⚠️ Error al conectar con la base de datos.");
     }
 }
 
@@ -232,9 +226,9 @@ async function finalizarDia() {
             for (let lavado of lavados) {
                 if (lavado.estado === "Abierto") {
                     await fetch(`${API_URL_LAVADOS}/${lavado.id}`, {
-                        method: 'PATCH',
+                        method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ estado: "Finalizado" })
+                        body: JSON.stringify({ ...lavado, estado: "Finalizado" })
                     });
                 }
             }

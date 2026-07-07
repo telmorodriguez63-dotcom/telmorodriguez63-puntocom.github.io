@@ -1,0 +1,59 @@
+{
+  "lavados": [
+    {
+      "fecha": "3/7/2026, 21:34:25",
+      "placa": "sfa12z",
+      "tipo": "Moto",
+      "valor": 15000,
+      "lavador": "Juan",
+      "estado": "Finalizado",
+      "id": "9-85e-kOcC4"
+    },
+    {
+      "fecha": "3/7/2026, 21:35:56",
+      "placa": "tqm768",
+      "tipo": "Carro",
+      "valor": 25000,
+      "lavador": "Pedro",
+      "estado": "Finalizado",
+      "id": "_tvNhFPs41s"
+    },
+    {
+      "fecha": "3/7/2026, 21:36:21",
+      "placa": "tqm768",
+      "tipo": "Carro",
+      "valor": 25000,
+      "lavador": "Juan",
+      "estado": "Finalizado",
+      "id": "Nzx8ALGb3ZY"
+    }
+  ],
+  "prestamos": [
+    {
+      "fecha": "3/7/2026, 22:24:27",
+      "lavador": "Juan",
+      "monto": 15000,
+      "id": "lFtxouc1MPs"
+    },
+    {
+      "fecha": "3/7/2026, 22:27:27",
+      "lavador": "Juan",
+      "monto": 15000,
+      "id": "WkHtXbR08k8"
+    },
+    {
+      "fecha": "3/7/2026, 22:28:31",
+      "lavador": "Pedro",
+      "monto": 12000,
+      "id": "C0KUo4rFF7A"
+    },
+    {
+      "fecha": "3/7/2026, 22:31:15",
+      "lavador": "Juan",
+      "monto": 15000,
+      "id": "cby1DJlsetQ"
+    }
+  ],
+  "empleados": [],
+  "$schema": "./node_modules/json-server/schema.json"
+}

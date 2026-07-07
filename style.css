@@ -1,0 +1,73 @@
+/* ==========================================================================
+   CONFIGURACIÓN Y ESTILOS MODERNOS PARA EL LAVADERO
+   ========================================================================== */
+
+/* Importar una tipografía moderna y limpia desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Suavizar el scroll y mejorar la selección de texto */
+html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom Scrollbar para que se vea bien en componentes con mucho texto */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1f2937; /* Gray 800 */
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4b5563; /* Gray 600 */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #10b981; /* Esmeralda/Verde */
+}
+
+/* ==========================================================================
+   EFECTOS VISUALES (Animaciones y Transiciones)
+   ========================================================================== */
+
+/* Animación sutil de entrada para las secciones al cargar la página */
+section, header {
+    animation: fadeIn 0.4s ease-out-backward;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efecto de enfoque moderno para los inputs y selectores */
+input:focus, select:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    background-color: #1f2937 !important; /* Un tono más oscuro al escribir */
+}
+
+/* Diseños especiales para los botones cuando se presionan en celular (Active state) */
+button:active {
+    transform: scale(0.98);
+}
+
+/* Estilo para simular tarjetas interactivas */
+.card-modulo {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+}

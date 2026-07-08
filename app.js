@@ -9,12 +9,6 @@ const usuariosAutorizados = {
 
 let usuarioLogueado = "";
 
-// Mapeo unificado hacia los nombres exactos de tu MockAPI ("Juan" y "Pedro")
-const mapeoLavadores = {
-    "jesus": "Juan",
-    "santiago": "Pedro"
-};
-
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('btn-ingresar').addEventListener('click', ejecutarLogin);
     document.getElementById('btn-cerrar-sesion').addEventListener('click', cerrarSesion);
@@ -62,7 +56,7 @@ function cerrarSesion() {
 async function registrarLavado() {
     const placa = document.getElementById('placa').value.trim().toUpperCase();
     const valorSeleccionado = parseFloat(document.getElementById('tipo').value);
-    const lavador = document.getElementById('lavador').value;
+    const lavador = document.getElementById('lavador').value; // Captura "Jesus" o "Santiago"
     
     if(!placa) return alert("Por favor, escribe la placa.");
 
@@ -84,7 +78,7 @@ async function registrarLavado() {
             body: JSON.stringify(nuevoLavado)
         });
         
-        alert(`✅ Lavado registrado para ${lavador === 'Juan' ? 'Jesús' : 'Santiago'}. Valor: $${valorSeleccionado.toLocaleString()}`);
+        alert(`✅ Lavado registrado para ${lavador}. Valor: $${valorSeleccionado.toLocaleString()}`);
         document.getElementById('placa').value = ""; 
         actualizarPanel();
     } catch (error) {
@@ -96,7 +90,7 @@ async function registrarPrestamo(evento) {
     if (evento && evento.preventDefault) evento.preventDefault();
 
     const monto = parseFloat(document.getElementById('monto-prestamo').value);
-    const lavador = document.getElementById('lavador-vale').value;
+    const lavador = document.getElementById('lavador-vale').value; // Captura "Jesus" o "Santiago"
 
     if(!monto || monto <= 0) return alert("Escribe un monto válido.");
 
@@ -116,7 +110,7 @@ async function registrarPrestamo(evento) {
         if (!respuesta.ok) throw new Error(`Error del servidor: ${respuesta.status}`);
         
         document.getElementById('monto-prestamo').value = "";
-        alert(`💰 Vale de $${monto.toLocaleString()} asignado con éxito a ${lavador === 'Juan' ? 'Jesús' : 'Santiago'}`);
+        alert(`💰 Vale de $${monto.toLocaleString()} asignado con éxito a ${lavador}`);
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar préstamo:", error);
@@ -125,7 +119,9 @@ async function registrarPrestamo(evento) {
 
 async function actualizarPanel() {
     if (!usuarioLogueado) return;
-    const lavadorActual = mapeoLavadores[usuarioLogueado.toLowerCase()] || "Juan";
+    
+    // El lavador actual ahora es directamente el usuario logueado (ej: "Jesus" o "Santiago")
+    const lavadorActual = usuarioLogueado;
 
     try {
         const resLavados = await fetch(API_URL_LAVADOS);
@@ -163,7 +159,6 @@ async function actualizarPanel() {
         const tablaValesBody = document.getElementById('tabla-vales-empleado');
         tablaValesBody.innerHTML = "";
         misPrestamos.forEach(p => {
-            // Extraer solo la hora para que la tabla sea más compacta en celulares
             const horaSimplificada = p.fecha.split(' ')[1] || p.fecha;
             tablaValesBody.innerHTML += `
                 <tr class="border-b border-slate-800 hover:bg-slate-800/30">
@@ -184,7 +179,7 @@ async function actualizarPanel() {
         document.getElementById('admin-caja-total').innerText = `$${cajaTotalGeneral.toLocaleString()}`;
         document.getElementById('admin-nomina-total').innerText = `$${nominaTotalGeneral.toLocaleString()}`;
 
-        const listaEmpleados = ["Juan", "Pedro"]; 
+        const listaEmpleados = ["Jesus", "Santiago"]; 
         const contenedorLiquidacion = document.getElementById('lista-liquidacion');
         contenedorLiquidacion.innerHTML = ""; 
 
@@ -200,7 +195,7 @@ async function actualizarPanel() {
             contenedorLiquidacion.innerHTML += `
                 <div class="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700/50">
                     <div>
-                        <p class="font-bold text-white">${emp === 'Juan' ? 'Jesús' : 'Santiago'}</p>
+                        <p class="font-bold text-white">${emp}</p>
                         <p class="text-xs text-slate-400">40%: $${totalEmp.toLocaleString()} | Vales: $${totalPrestamosEmp.toLocaleString()}</p>
                     </div>
                     <span class="text-sm font-black ${netoAPagar >= 0 ? 'text-emerald-400' : 'text-rose-400'}">

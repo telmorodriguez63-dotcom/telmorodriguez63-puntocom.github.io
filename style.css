@@ -1,53 +1,55 @@
-/* ==========================================================================
-   CONFIGURACIÓN Y ESTILOS MODERNOS PARA EL LAVADERO
-   ========================================================================== */
-
-/* Importar una tipografía moderna y limpia desde Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* Suavizar el scroll y mejorar la selección de texto */
 html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Custom Scrollbar para que se vea bien en componentes con mucho texto */
+/* Fondo temático simulando agua profunda y burbujas */
+.backdrop-burbujas {
+    background-color: #020617;
+    background-image: 
+        radial-gradient(circle at 20% 30%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(16, 185, 129, 0.03) 0%, transparent 40%);
+    background-attachment: fixed;
+}
+
+/* Custom Scrollbar moderno */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-    background: #1f2937; /* Gray 800 */
+    background: #0f172a;
 }
-
 ::-webkit-scrollbar-thumb {
-    background: #4b5563; /* Gray 600 */
+    background: #334155;
     border-radius: 10px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-    background: #10b981; /* Esmeralda/Verde */
+    background: #06b6d4;
 }
 
-/* ==========================================================================
-   EFECTOS VISUALES (Animaciones y Transiciones)
-   ========================================================================== */
+/* Efectos visuales de tarjetas con reflejos cristalinos */
+.card-modulo {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
 
-/* Animación sutil de entrada para las secciones al cargar la página */
-section, header {
-    animation: fadeIn 0.4s ease-out-backward;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Animaciones */
+.animate-fadeIn {
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(8px);
     }
     to {
         opacity: 1;
@@ -55,19 +57,10 @@ section, header {
     }
 }
 
-/* Efecto de enfoque moderno para los inputs y selectores */
+/* Transiciones enfocadas para inputs */
 input:focus, select:focus {
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-    background-color: #1f2937 !important; /* Un tono más oscuro al escribir */
-}
-
-/* Diseños especiales para los botones cuando se presionan en celular (Active state) */
-button:active {
-    transform: scale(0.98);
-}
-
-/* Estilo para simular tarjetas interactivas */
-.card-modulo {
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(8px);
+    border-color: #06b6d4 !important;
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+    background-color: #0f172a !important;
+    transition: all 0.2s ease;
 }

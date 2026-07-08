@@ -1,5 +1,5 @@
-const API_URL_LAVADOS = "http://192.168.40.19:3000/lavados";
-const API_URL_PRESTAMOS = "http://192.168.40.19:3000/prestamos";
+const API_URL_LAVADOS = "https://6a4886c6a033dcb98d64a1f0.mockapi.io/lavados";
+const API_URL_PRESTAMOS = "https://6a4887b3a033dcb98d64a283.mockapi.io/prestamos";
 
 const usuariosAutorizados = {
     "oscar": "123456789",
@@ -9,8 +9,8 @@ const usuariosAutorizados = {
 
 let usuarioLogueado = "";
 const mapeoLavadores = {
-    "Jesus": "Juan",
-    "Santiago": "Pedro"
+    "Jesus"
+    "Santiago"
 };
 
 document.addEventListener("DOMContentLoaded", () => {

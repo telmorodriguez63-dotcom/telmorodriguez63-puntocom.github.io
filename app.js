@@ -1,7 +1,6 @@
 const API_URL_LAVADOS = "https://6a52f3f278ecba6073e2e7dc.mockapi.io/lavados/carwash/v1/lavados";
 const API_URL_PRESTAMOS = "https://6a52f49e78ecba6073e2e803.mockapi.io/prestamos/carwash/v1/prestamos";
 
-// CORREGIDO: Sintaxis limpia con todas sus comas correspondientes
 const usuariosAutorizados = {
     "oscar": "123456789",
     "jesus": "123456789",
@@ -57,7 +56,8 @@ function cerrarSesion() {
 }
 
 async function registrarLavado() {
-    const placa = document.getElementById('placa').value.trim().toUpperCase();
+    const placaInput = document.getElementById('placa');
+    const placa = placaInput.value.trim().toUpperCase();
     const valorSeleccionado = parseFloat(document.getElementById('tipo').value);
     const lavador = document.getElementById('lavador').value;
     
@@ -81,21 +81,22 @@ async function registrarLavado() {
             body: JSON.stringify(nuevoLavado)
         });
         
-        if (!respuesta.ok) throw new Error(`Error en servidor: ${respuesta.status}`);
+        if (!respuesta.ok) throw new Error(`Error en el servidor: ${respuesta.status}`);
         
-        alert(`✅ Lavado registrado para ${lavador}. Valor: $${valorSeleccionado.toLocaleString()}`);
-        document.getElementById('placa').value = ""; 
+        alert(`✅ Lavado registrado para ${lavador}.\nPlaca: ${placa}\nValor: $${valorSeleccionado.toLocaleString()}`);
+        placaInput.value = ""; 
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar lavado:", error);
-        alert("❌ No se pudo guardar el lavado. Revisa la conexión de MockAPI.");
+        alert("❌ Error: No se pudo conectar con MockAPI para registrar el lavado.");
     }
 }
 
 async function registrarPrestamo(evento) {
     if (evento && evento.preventDefault) evento.preventDefault();
 
-    const monto = parseFloat(document.getElementById('monto-prestamo').value);
+    const montoInput = document.getElementById('monto-prestamo');
+    const monto = parseFloat(montoInput.value);
     const lavador = document.getElementById('lavador-vale').value;
 
     if(!monto || monto <= 0) return alert("Escribe un monto válido.");
@@ -115,12 +116,12 @@ async function registrarPrestamo(evento) {
         
         if (!respuesta.ok) throw new Error(`Error del servidor: ${respuesta.status}`);
         
-        document.getElementById('monto-prestamo').value = "";
+        montoInput.value = "";
         alert(`💰 Vale de $${monto.toLocaleString()} asignado con éxito a ${lavador}`);
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar préstamo:", error);
-        alert("❌ No se pudo guardar el vale.");
+        alert("❌ Error: No se pudo registrar el vale en MockAPI.");
     }
 }
 
@@ -136,12 +137,15 @@ async function actualizarPanel() {
         const resPrestamos = await fetch(API_URL_PRESTAMOS);
         const prestamos = await resPrestamos.json();
 
+        const esListaLavadosValida = Array.isArray(lavados);
+        const esListaPrestamosValida = Array.isArray(prestamos);
+
         // 1. RENDERS VISTA EMPLEADO
-        let filtrados = lavados.filter(l => l.lavador === lavadorActual && l.estado === "Abierto");
+        let filtrados = esListaLavadosValida ? lavados.filter(l => l.lavador === lavadorActual && l.estado === "Abierto") : [];
         let totalProducido = filtrados.reduce((sum, l) => sum + l.valor, 0);
         let gananciaEmpleado = totalProducido * 0.40;
 
-        let misPrestamos = prestamos.filter(p => p.lavador === lavadorActual);
+        let misPrestamos = esListaPrestamosValida ? prestamos.filter(p => p.lavador === lavadorActual) : [];
         let totalMisPrestamos = misPrestamos.reduce((sum, p) => sum + p.monto, 0);
 
         document.getElementById('total-producido').innerText = `$${totalProducido.toLocaleString()}`;
@@ -178,23 +182,23 @@ async function actualizarPanel() {
         }
 
         // 2. RENDERS VISTA ADMINISTRADOR (GLOBALES)
-        let lavadosAbiertosGlobal = lavados.filter(l => l.estado === "Abierto");
+        let lavadosAbiertosGlobal = esListaLavadosValida ? lavados.filter(l => l.estado === "Abierto") : [];
         let cajaTotalGeneral = lavadosAbiertosGlobal.reduce((sum, l) => sum + l.valor, 0);
         let nominaTotalGeneral = cajaTotalGeneral * 0.40;
 
         document.getElementById('admin-caja-total').innerText = `$${cajaTotalGeneral.toLocaleString()}`;
         document.getElementById('admin-nomina-total').innerText = `$${nominaTotalGeneral.toLocaleString()}`;
 
-        // CORREGIDO: Lista extendida para incluir a los nuevos muchachos
-        const listaEmpleados = ["Jesus", "Santiago", "Carlos", "Andres"]; 
+        // Incluye exactamente los mismos valores del HTML
+        const listaEmpleados = ["Jesus", "Santiago", "Andres", "Carlos"]; 
         const contenedorLiquidacion = document.getElementById('lista-liquidacion');
         contenedorLiquidacion.innerHTML = ""; 
 
         listaEmpleados.forEach(emp => {
-            let lavadosEmp = lavados.filter(l => l.lavador === emp && l.estado === "Abierto");
+            let lavadosEmp = esListaLavadosValida ? lavados.filter(l => l.lavador === emp && l.estado === "Abierto") : [];
             let totalEmp = lavadosEmp.reduce((sum, l) => sum + l.valor, 0) * 0.40;
             
-            let prestamosEmp = prestamos.filter(p => p.lavador === emp);
+            let prestamosEmp = esListaPrestamosValida ? prestamos.filter(p => p.lavador === emp) : [];
             let totalPrestamosEmp = prestamosEmp.reduce((sum, p) => sum + p.monto, 0);
             
             let netoAPagar = totalEmp - totalPrestamosEmp;
@@ -223,13 +227,15 @@ async function finalizarDia() {
             const resLavados = await fetch(API_URL_LAVADOS);
             const lavados = await resLavados.json();
 
-            for (let lavado of lavados) {
-                if (lavado.estado === "Abierto") {
-                    await fetch(`${API_URL_LAVADOS}/${lavado.id}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ estado: "Finalizado" })
-                    });
+            if (Array.isArray(lavados)) {
+                for (let lavado of lavados) {
+                    if (lavado.estado === "Abierto") {
+                        await fetch(`${API_URL_LAVADOS}/${lavado.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ estado: "Finalizado" })
+                        });
+                    }
                 }
             }
             alert("🔒 Caja y día finalizados con éxito.");

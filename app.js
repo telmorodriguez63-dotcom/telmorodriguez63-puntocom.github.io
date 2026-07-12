@@ -1,5 +1,5 @@
-const API_URL_LAVADOS = "https://6a4886c6a033dcb98d64a1f0.mockapi.io/lavados";
-const API_URL_PRESTAMOS = "https://6a4887b3a033dcb98d64a283.mockapi.io/prestamos";
+const API_URL_LAVADOS = "https:// 6a52f3f278ecba6073e2e7dc.mockapi.io/lavados/carwash/v1/";
+const API_URL_PRESTAMOS = "https://6a52f49e78ecba6073e2e803.mockapi.io/prestamos/carwash/v1/";
 
 const usuariosAutorizados = {
     "oscar": "123456789",

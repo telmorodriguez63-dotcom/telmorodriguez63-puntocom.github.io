@@ -5,6 +5,8 @@ const usuariosAutorizados = {
     "oscar": "123456789",
     "jesus": "123456789",
     "santiago": "123456789"
+    "carlos": "123456789"
+"andres": "123456789"
 };
 
 let usuarioLogueado = "";

@@ -1,12 +1,13 @@
-const API_URL_LAVADOS = "https:// 6a52f3f278ecba6073e2e7dc.mockapi.io/lavados/carwash/v1/";
-const API_URL_PRESTAMOS = "https://6a52f49e78ecba6073e2e803.mockapi.io/prestamos/carwash/v1/";
+const API_URL_LAVADOS = "https://6a52f3f278ecba6073e2e7dc.mockapi.io/lavados/carwash/v1/lavados";
+const API_URL_PRESTAMOS = "https://6a52f49e78ecba6073e2e803.mockapi.io/prestamos/carwash/v1/prestamos";
 
+// CORREGIDO: Sintaxis limpia con todas sus comas correspondientes
 const usuariosAutorizados = {
     "oscar": "123456789",
     "jesus": "123456789",
-    "santiago": "123456789"
-    "carlos": "123456789"
-"andres": "123456789"
+    "santiago": "123456789",
+    "carlos": "123456789",
+    "andres": "123456789"
 };
 
 let usuarioLogueado = "";
@@ -58,7 +59,7 @@ function cerrarSesion() {
 async function registrarLavado() {
     const placa = document.getElementById('placa').value.trim().toUpperCase();
     const valorSeleccionado = parseFloat(document.getElementById('tipo').value);
-    const lavador = document.getElementById('lavador').value; // Captura "Jesus" o "Santiago"
+    const lavador = document.getElementById('lavador').value;
     
     if(!placa) return alert("Por favor, escribe la placa.");
 
@@ -74,17 +75,20 @@ async function registrarLavado() {
     };
 
     try {
-        await fetch(API_URL_LAVADOS, {
+        const respuesta = await fetch(API_URL_LAVADOS, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(nuevoLavado)
         });
+        
+        if (!respuesta.ok) throw new Error(`Error en servidor: ${respuesta.status}`);
         
         alert(`✅ Lavado registrado para ${lavador}. Valor: $${valorSeleccionado.toLocaleString()}`);
         document.getElementById('placa').value = ""; 
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar lavado:", error);
+        alert("❌ No se pudo guardar el lavado. Revisa la conexión de MockAPI.");
     }
 }
 
@@ -92,7 +96,7 @@ async function registrarPrestamo(evento) {
     if (evento && evento.preventDefault) evento.preventDefault();
 
     const monto = parseFloat(document.getElementById('monto-prestamo').value);
-    const lavador = document.getElementById('lavador-vale').value; // Captura "Jesus" o "Santiago"
+    const lavador = document.getElementById('lavador-vale').value;
 
     if(!monto || monto <= 0) return alert("Escribe un monto válido.");
 
@@ -116,13 +120,13 @@ async function registrarPrestamo(evento) {
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar préstamo:", error);
+        alert("❌ No se pudo guardar el vale.");
     }
 }
 
 async function actualizarPanel() {
     if (!usuarioLogueado) return;
     
-    // El lavador actual ahora es directamente el usuario logueado (ej: "Jesus" o "Santiago")
     const lavadorActual = usuarioLogueado;
 
     try {
@@ -181,7 +185,8 @@ async function actualizarPanel() {
         document.getElementById('admin-caja-total').innerText = `$${cajaTotalGeneral.toLocaleString()}`;
         document.getElementById('admin-nomina-total').innerText = `$${nominaTotalGeneral.toLocaleString()}`;
 
-        const listaEmpleados = ["Jesus", "Santiago"]; 
+        // CORREGIDO: Lista extendida para incluir a los nuevos muchachos
+        const listaEmpleados = ["Jesus", "Santiago", "Carlos", "Andres"]; 
         const contenedorLiquidacion = document.getElementById('lista-liquidacion');
         contenedorLiquidacion.innerHTML = ""; 
 

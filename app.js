@@ -11,6 +11,9 @@ const usuariosAutorizados = {
 
 let usuarioLogueado = "";
 
+// Función para forzar al navegador a traer datos nuevos del servidor y evitar bloqueos locales
+const obtenerURLconFiltro = (url) => `${url}?_t=${Date.now()}`;
+
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('btn-ingresar').addEventListener('click', ejecutarLogin);
     document.getElementById('btn-cerrar-sesion').addEventListener('click', cerrarSesion);
@@ -88,7 +91,7 @@ async function registrarLavado() {
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar lavado:", error);
-        alert("❌ Error: No se pudo conectar con MockAPI para registrar el lavado.");
+        alert("❌ Error: No se pudo conectar con MockAPI para registrar el lavado. Asegúrate de haber creado el recurso 'lavados' en MockAPI.");
     }
 }
 
@@ -121,7 +124,7 @@ async function registrarPrestamo(evento) {
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar préstamo:", error);
-        alert("❌ Error: No se pudo registrar el vale en MockAPI.");
+        alert("❌ Error: No se pudo conectar con MockAPI para registrar el vale. Asegúrate de haber creado el recurso 'prestamos' en MockAPI.");
     }
 }
 
@@ -131,10 +134,10 @@ async function actualizarPanel() {
     const lavadorActual = usuarioLogueado;
 
     try {
-        const resLavados = await fetch(API_URL_LAVADOS);
+        const resLavados = await fetch(obtenerURLconFiltro(API_URL_LAVADOS));
         const lavados = await resLavados.json();
 
-        const resPrestamos = await fetch(API_URL_PRESTAMOS);
+        const resPrestamos = await fetch(obtenerURLconFiltro(API_URL_PRESTAMOS));
         const prestamos = await resPrestamos.json();
 
         const esListaLavadosValida = Array.isArray(lavados);
@@ -189,7 +192,6 @@ async function actualizarPanel() {
         document.getElementById('admin-caja-total').innerText = `$${cajaTotalGeneral.toLocaleString()}`;
         document.getElementById('admin-nomina-total').innerText = `$${nominaTotalGeneral.toLocaleString()}`;
 
-        // Incluye exactamente los mismos valores del HTML
         const listaEmpleados = ["Jesus", "Santiago", "Andres", "Carlos"]; 
         const contenedorLiquidacion = document.getElementById('lista-liquidacion');
         contenedorLiquidacion.innerHTML = ""; 
@@ -224,7 +226,7 @@ async function actualizarPanel() {
 async function finalizarDia() {
     if(confirm("¿Seguro que deseas finalizar el día? Se cerrarán todos los lavados abiertos.")) {
         try {
-            const resLavados = await fetch(API_URL_LAVADOS);
+            const resLavados = await fetch(obtenerURLconFiltro(API_URL_LAVADOS));
             const lavados = await resLavados.json();
 
             if (Array.isArray(lavados)) {
@@ -244,3 +246,4 @@ async function finalizarDia() {
             console.error("Error al cerrar el día:", error);
         }
     }
+}

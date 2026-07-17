@@ -11,7 +11,7 @@ const usuariosAutorizados = {
 
 let usuarioLogueado = "";
 
-// Función para evitar el almacenamiento en caché del navegador al solicitar datos de MockAPI
+// Evitar caché de red
 const obtenerURLconFiltro = (url) => `${url}?_t=${Date.now()}`;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -37,8 +37,9 @@ function ejecutarLogin() {
         const vistaEmpleado = document.getElementById('vista-empleado');
         const vistaAdmin = document.getElementById('vista-admin');
 
+        // CORRECCIÓN: Oscar ahora ve TODO. Los empleados solo ven su parte.
         if (usuarioLogueado.toLowerCase() === "oscar") {
-            vistaEmpleado.classList.add('hidden');
+            vistaEmpleado.classList.remove('hidden'); 
             vistaAdmin.classList.remove('hidden');
         } else {
             vistaEmpleado.classList.remove('hidden');
@@ -66,10 +67,8 @@ async function registrarLavado() {
     
     if(!placa) return alert("Por favor, escribe la placa.");
 
-    const fechaActual = new Date().toLocaleString(); 
-
     const nuevoLavado = {
-        fecha: fechaActual,
+        fecha: new Date().toLocaleString(),
         placa: placa,
         tipo: valorSeleccionado <= 15000 ? "Moto" : "Carro",
         valor: valorSeleccionado,
@@ -91,7 +90,7 @@ async function registrarLavado() {
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar lavado:", error);
-        alert("❌ Error: No se pudo conectar con MockAPI. Asegúrate de que el recurso 'lavados' exista en tu MockAPI.");
+        alert("❌ Error: No se pudo conectar con MockAPI. Verifica que los links en el código sean correctos y que tu proyecto en MockAPI esté activo.");
     }
 }
 
@@ -124,7 +123,7 @@ async function registrarPrestamo(evento) {
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar préstamo:", error);
-        alert("❌ Error: No se pudo conectar con MockAPI. Asegúrate de que el recurso 'prestamos' exista en tu MockAPI.");
+        alert("❌ Error: No se pudo conectar con MockAPI. Verifica los links.");
     }
 }
 
@@ -134,28 +133,26 @@ async function actualizarPanel() {
     const lavadorActual = usuarioLogueado;
 
     try {
-        // Consultar lavados
         let lavados = [];
         try {
             const resLavados = await fetch(obtenerURLconFiltro(API_URL_LAVADOS));
             if (resLavados.ok) lavados = await resLavados.json();
         } catch (e) {
-            console.error("No se pudo obtener lavados desde la API, usando datos vacíos", e);
+            console.warn("Fallo al cargar lavados, usando array vacío.");
         }
 
-        // Consultar préstamos
         let prestamos = [];
         try {
             const resPrestamos = await fetch(obtenerURLconFiltro(API_URL_PRESTAMOS));
             if (resPrestamos.ok) prestamos = await resPrestamos.json();
         } catch (e) {
-            console.error("No se pudo obtener préstamos desde la API, usando datos vacíos", e);
+            console.warn("Fallo al cargar préstamos, usando array vacío.");
         }
 
         const esListaLavadosValida = Array.isArray(lavados);
         const esListaPrestamosValida = Array.isArray(prestamos);
 
-        // 1. RENDERS VISTA EMPLEADO
+        // RENDER VISTA EMPLEADO
         let filtrados = esListaLavadosValida ? lavados.filter(l => l.lavador === lavadorActual && l.estado === "Abierto") : [];
         let totalProducido = filtrados.reduce((sum, l) => sum + l.valor, 0);
         let gananciaEmpleado = totalProducido * 0.40;
@@ -178,7 +175,7 @@ async function actualizarPanel() {
             `;
         });
         if(filtrados.length === 0) {
-            tablaBody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-slate-500 italic">No tienes vehículos registrados hoy</td></tr>`;
+            tablaBody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-slate-500 italic">No tienes vehículos hoy</td></tr>`;
         }
 
         const tablaValesBody = document.getElementById('tabla-vales-empleado');
@@ -193,10 +190,10 @@ async function actualizarPanel() {
             `;
         });
         if(misPrestamos.length === 0) {
-            tablaValesBody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-slate-500 italic">No registras vales hoy</td></tr>`;
+            tablaValesBody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-slate-500 italic">No tienes vales hoy</td></tr>`;
         }
 
-        // 2. RENDERS VISTA ADMINISTRADOR (GLOBALES)
+        // RENDER VISTA ADMINISTRADOR
         let lavadosAbiertosGlobal = esListaLavadosValida ? lavados.filter(l => l.estado === "Abierto") : [];
         let cajaTotalGeneral = lavadosAbiertosGlobal.reduce((sum, l) => sum + l.valor, 0);
         let nominaTotalGeneral = cajaTotalGeneral * 0.40;
@@ -218,7 +215,7 @@ async function actualizarPanel() {
             let netoAPagar = totalEmp - totalPrestamosEmp;
 
             contenedorLiquidacion.innerHTML += `
-                <div class="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700/50">
+                <div class="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700/50 mb-2">
                     <div>
                         <p class="font-bold text-white">${emp}</p>
                         <p class="text-xs text-slate-400">40%: $${totalEmp.toLocaleString()} | Vales: $${totalPrestamosEmp.toLocaleString()}</p>
@@ -231,12 +228,12 @@ async function actualizarPanel() {
         });
 
     } catch (error) {
-        console.error("Error general al actualizar el panel:", error);
+        console.error("Error al actualizar:", error);
     }
 }
 
 async function finalizarDia() {
-    if(confirm("¿Seguro que deseas finalizar el día? Se cerrarán todos los lavados abiertos.")) {
+    if(confirm("¿Seguro que deseas finalizar el día?")) {
         try {
             const resLavados = await fetch(obtenerURLconFiltro(API_URL_LAVADOS));
             const lavados = await resLavados.json();
@@ -256,7 +253,6 @@ async function finalizarDia() {
             actualizarPanel();
         } catch (error) {
             console.error("Error al cerrar el día:", error);
-            alert("No se pudo cerrar el día completamente. Revisa tu conexión.");
         }
     }
 }

@@ -244,4 +244,3 @@ async function finalizarDia() {
             console.error("Error al cerrar el día:", error);
         }
     }
-}

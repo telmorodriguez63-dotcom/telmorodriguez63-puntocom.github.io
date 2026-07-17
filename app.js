@@ -11,7 +11,7 @@ const usuariosAutorizados = {
 
 let usuarioLogueado = "";
 
-// Función para forzar al navegador a traer datos nuevos del servidor y evitar bloqueos locales
+// Función para evitar el almacenamiento en caché del navegador al solicitar datos de MockAPI
 const obtenerURLconFiltro = (url) => `${url}?_t=${Date.now()}`;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -32,12 +32,12 @@ function ejecutarLogin() {
         document.getElementById('pantalla-login').classList.add('hidden');
         document.getElementById('app-principal').classList.remove('hidden');
         
-        document.getElementById('nombre-usuario-activo').innerText = usuarioLogueado === "Oscar" ? "Oscar (Administrador)" : `Empleado: ${usuarioLogueado}`;
+        document.getElementById('nombre-usuario-activo').innerText = usuarioLogueado.toLowerCase() === "oscar" ? "Oscar (Administrador)" : `Empleado: ${usuarioLogueado}`;
         
         const vistaEmpleado = document.getElementById('vista-empleado');
         const vistaAdmin = document.getElementById('vista-admin');
 
-        if (usuarioLogueado === "Oscar") {
+        if (usuarioLogueado.toLowerCase() === "oscar") {
             vistaEmpleado.classList.add('hidden');
             vistaAdmin.classList.remove('hidden');
         } else {
@@ -48,7 +48,7 @@ function ejecutarLogin() {
         document.getElementById('login-password').value = "";
         actualizarPanel();
     } else {
-        alert("❌ Contraseña incorrecta. Acceso denegado.");
+        alert("❌ Contraseña incorrecta o usuario no válido.");
     }
 }
 
@@ -91,7 +91,7 @@ async function registrarLavado() {
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar lavado:", error);
-        alert("❌ Error: No se pudo conectar con MockAPI para registrar el lavado. Asegúrate de haber creado el recurso 'lavados' en MockAPI.");
+        alert("❌ Error: No se pudo conectar con MockAPI. Asegúrate de que el recurso 'lavados' exista en tu MockAPI.");
     }
 }
 
@@ -124,7 +124,7 @@ async function registrarPrestamo(evento) {
         actualizarPanel();
     } catch (error) {
         console.error("Error al guardar préstamo:", error);
-        alert("❌ Error: No se pudo conectar con MockAPI para registrar el vale. Asegúrate de haber creado el recurso 'prestamos' en MockAPI.");
+        alert("❌ Error: No se pudo conectar con MockAPI. Asegúrate de que el recurso 'prestamos' exista en tu MockAPI.");
     }
 }
 
@@ -134,11 +134,23 @@ async function actualizarPanel() {
     const lavadorActual = usuarioLogueado;
 
     try {
-        const resLavados = await fetch(obtenerURLconFiltro(API_URL_LAVADOS));
-        const lavados = await resLavados.json();
+        // Consultar lavados
+        let lavados = [];
+        try {
+            const resLavados = await fetch(obtenerURLconFiltro(API_URL_LAVADOS));
+            if (resLavados.ok) lavados = await resLavados.json();
+        } catch (e) {
+            console.error("No se pudo obtener lavados desde la API, usando datos vacíos", e);
+        }
 
-        const resPrestamos = await fetch(obtenerURLconFiltro(API_URL_PRESTAMOS));
-        const prestamos = await resPrestamos.json();
+        // Consultar préstamos
+        let prestamos = [];
+        try {
+            const resPrestamos = await fetch(obtenerURLconFiltro(API_URL_PRESTAMOS));
+            if (resPrestamos.ok) prestamos = await resPrestamos.json();
+        } catch (e) {
+            console.error("No se pudo obtener préstamos desde la API, usando datos vacíos", e);
+        }
 
         const esListaLavadosValida = Array.isArray(lavados);
         const esListaPrestamosValida = Array.isArray(prestamos);
@@ -219,7 +231,7 @@ async function actualizarPanel() {
         });
 
     } catch (error) {
-        console.error("Error al obtener datos:", error);
+        console.error("Error general al actualizar el panel:", error);
     }
 }
 
@@ -244,6 +256,7 @@ async function finalizarDia() {
             actualizarPanel();
         } catch (error) {
             console.error("Error al cerrar el día:", error);
+            alert("No se pudo cerrar el día completamente. Revisa tu conexión.");
         }
     }
 }

@@ -1,258 +1,179 @@
-const API_URL_LAVADOS = "https://6a52fb8278ecba6073e2ea41.mockapi.io/lavados";
-const API_URL_PRESTAMOS = "https://6a52fd6178ecba6073e2ebb2.mockapi.io/prestamos";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Lavadero Express - Panel de Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 flex flex-col justify-center items-center backdrop-burbujas">
 
-const usuariosAutorizados = {
-    "oscar": "123456789",
-    "jesus": "123456789",
-    "santiago": "123456789",
-    "carlos": "123456789",
-    "andres": "123456789"
-};
+    <div id="pantalla-login" class="w-full max-w-md bg-slate-900/90 p-6 rounded-2xl shadow-2xl space-y-6 border border-cyan-500/30 card-modulo">
+        <div class="text-center space-y-2">
+            <div class="inline-flex p-3 bg-cyan-500/10 rounded-full text-cyan-400 mb-2 animate-bounce">
+                💧
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                Lavadero Express
+            </h1>
+            <p class="text-sm text-slate-400">Selecciona tu perfil para ingresar al sistema</p>
+        </div>
 
-let usuarioLogueado = "";
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Usuario</label>
+                <select id="login-usuario" class="w-full bg-slate-950 text-slate-100 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-cyan-400 transition-colors">
+                    <option value="Oscar">Oscar (Administrador)</option>
+                    <option value="Jesus">Jesus</option>
+                    <option value="Santiago">Santiago</option>
+                    <option value="Andres">Andres</option>
+                    <option value="Carlos">Carlos</option>
+                </select>
+            </div>
 
-// Evitar caché de red
-const obtenerURLconFiltro = (url) => `${url}?_t=${Date.now()}`;
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Contraseña</label>
+                <input id="login-password" type="password" placeholder="••••••••" class="w-full bg-slate-950 text-slate-100 p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-cyan-400 transition-colors font-mono">
+            </div>
 
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById('btn-ingresar').addEventListener('click', ejecutarLogin);
-    document.getElementById('btn-cerrar-sesion').addEventListener('click', cerrarSesion);
-    document.getElementById('btn-registrar').addEventListener('click', registrarLavado);
-    document.getElementById('btn-prestamo').addEventListener('click', registrarPrestamo);
-    document.getElementById('btn-finalizar').addEventListener('click', finalizarDia);
-});
+            <button id="btn-ingresar" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 font-bold text-slate-950 rounded-lg transition-transform active:scale-95 shadow-lg shadow-cyan-500/20">
+                Ingresar al Sistema
+            </button>
+        </div>
+    </div>
 
-function ejecutarLogin() {
-    const usuarioSeleccionado = document.getElementById('login-usuario').value;
-    const contrasenaIngresada = document.getElementById('login-password').value;
-
-    if (contrasenaIngresada === usuariosAutorizados[usuarioSeleccionado.toLowerCase()]) {
-        usuarioLogueado = usuarioSeleccionado;
+    <div id="app-principal" class="w-full max-w-md hidden space-y-5 animate-fade-in">
         
-        document.getElementById('pantalla-login').classList.add('hidden');
-        document.getElementById('app-principal').classList.remove('hidden');
-        
-        document.getElementById('nombre-usuario-activo').innerText = usuarioLogueado.toLowerCase() === "oscar" ? "Oscar (Administrador)" : `Empleado: ${usuarioLogueado}`;
-        
-        const vistaEmpleado = document.getElementById('vista-empleado');
-        const vistaAdmin = document.getElementById('vista-admin');
+        <header class="flex justify-between items-center bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+            <div>
+                <h3 id="nombre-usuario-activo" class="font-bold text-white text-base">Cargando...</h3>
+                <p class="text-xs text-slate-400">Sesión Activa</p>
+            </div>
+            <button id="btn-cerrar-sesion" class="px-3 py-1.5 text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-md transition-colors border border-rose-500/20">
+                Salir
+            </button>
+        </header>
 
-        // CORRECCIÓN: Oscar ahora ve TODO. Los empleados solo ven su parte.
-        if (usuarioLogueado.toLowerCase() === "oscar") {
-            vistaEmpleado.classList.remove('hidden'); 
-            vistaAdmin.classList.remove('hidden');
-        } else {
-            vistaEmpleado.classList.remove('hidden');
-            vistaAdmin.classList.add('hidden');
-        }
-        
-        document.getElementById('login-password').value = "";
-        actualizarPanel();
-    } else {
-        alert("❌ Contraseña incorrecta o usuario no válido.");
-    }
-}
-
-function cerrarSesion() {
-    usuarioLogueado = "";
-    document.getElementById('app-principal').classList.add('hidden');
-    document.getElementById('pantalla-login').classList.remove('hidden');
-}
-
-async function registrarLavado() {
-    const placaInput = document.getElementById('placa');
-    const placa = placaInput.value.trim().toUpperCase();
-    const valorSeleccionado = parseFloat(document.getElementById('tipo').value);
-    const lavador = document.getElementById('lavador').value;
-    
-    if(!placa) return alert("Por favor, escribe la placa.");
-
-    const nuevoLavado = {
-        fecha: new Date().toLocaleString(),
-        placa: placa,
-        tipo: valorSeleccionado <= 15000 ? "Moto" : "Carro",
-        valor: valorSeleccionado,
-        lavador: lavador,
-        estado: "Abierto"
-    };
-
-    try {
-        const respuesta = await fetch(API_URL_LAVADOS, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(nuevoLavado)
-        });
-        
-        if (!respuesta.ok) throw new Error(`Error en el servidor: ${respuesta.status}`);
-        
-        alert(`✅ Lavado registrado para ${lavador}.\nPlaca: ${placa}\nValor: $${valorSeleccionado.toLocaleString()}`);
-        placaInput.value = ""; 
-        actualizarPanel();
-    } catch (error) {
-        console.error("Error al guardar lavado:", error);
-        alert("❌ Error: No se pudo conectar con MockAPI. Verifica que los links en el código sean correctos y que tu proyecto en MockAPI esté activo.");
-    }
-}
-
-async function registrarPrestamo(evento) {
-    if (evento && evento.preventDefault) evento.preventDefault();
-
-    const montoInput = document.getElementById('monto-prestamo');
-    const monto = parseFloat(montoInput.value);
-    const lavador = document.getElementById('lavador-vale').value;
-
-    if(!monto || monto <= 0) return alert("Escribe un monto válido.");
-
-    const nuevoPrestamo = {
-        fecha: new Date().toLocaleString(),
-        lavador: lavador,
-        monto: monto
-    };
-
-    try {
-        const respuesta = await fetch(API_URL_PRESTAMOS, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(nuevoPrestamo)
-        });
-        
-        if (!respuesta.ok) throw new Error(`Error del servidor: ${respuesta.status}`);
-        
-        montoInput.value = "";
-        alert(`💰 Vale de $${monto.toLocaleString()} asignado con éxito a ${lavador}`);
-        actualizarPanel();
-    } catch (error) {
-        console.error("Error al guardar préstamo:", error);
-        alert("❌ Error: No se pudo conectar con MockAPI. Verifica los links.");
-    }
-}
-
-async function actualizarPanel() {
-    if (!usuarioLogueado) return;
-    
-    const lavadorActual = usuarioLogueado;
-
-    try {
-        let lavados = [];
-        try {
-            const resLavados = await fetch(obtenerURLconFiltro(API_URL_LAVADOS));
-            if (resLavados.ok) lavados = await resLavados.json();
-        } catch (e) {
-            console.warn("Fallo al cargar lavados, usando array vacío.");
-        }
-
-        let prestamos = [];
-        try {
-            const resPrestamos = await fetch(obtenerURLconFiltro(API_URL_PRESTAMOS));
-            if (resPrestamos.ok) prestamos = await resPrestamos.json();
-        } catch (e) {
-            console.warn("Fallo al cargar préstamos, usando array vacío.");
-        }
-
-        const esListaLavadosValida = Array.isArray(lavados);
-        const esListaPrestamosValida = Array.isArray(prestamos);
-
-        // RENDER VISTA EMPLEADO
-        let filtrados = esListaLavadosValida ? lavados.filter(l => l.lavador === lavadorActual && l.estado === "Abierto") : [];
-        let totalProducido = filtrados.reduce((sum, l) => sum + l.valor, 0);
-        let gananciaEmpleado = totalProducido * 0.40;
-
-        let misPrestamos = esListaPrestamosValida ? prestamos.filter(p => p.lavador === lavadorActual) : [];
-        let totalMisPrestamos = misPrestamos.reduce((sum, p) => sum + p.monto, 0);
-
-        document.getElementById('total-producido').innerText = `$${totalProducido.toLocaleString()}`;
-        document.getElementById('total-ganancia').innerText = `$${gananciaEmpleado.toLocaleString()}`;
-        document.getElementById('total-prestamos').innerText = `$${totalMisPrestamos.toLocaleString()}`;
-
-        const tablaBody = document.getElementById('tabla-vehiculos-empleado');
-        tablaBody.innerHTML = "";
-        filtrados.forEach(l => {
-            tablaBody.innerHTML += `
-                <tr class="border-b border-slate-800 hover:bg-slate-800/30">
-                    <td class="py-2.5 font-mono text-cyan-400 font-bold">${l.placa}</td>
-                    <td class="py-2.5 text-right font-semibold">$${l.valor.toLocaleString()}</td>
-                </tr>
-            `;
-        });
-        if(filtrados.length === 0) {
-            tablaBody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-slate-500 italic">No tienes vehículos hoy</td></tr>`;
-        }
-
-        const tablaValesBody = document.getElementById('tabla-vales-empleado');
-        tablaValesBody.innerHTML = "";
-        misPrestamos.forEach(p => {
-            const horaSimplificada = p.fecha.split(' ')[1] || p.fecha;
-            tablaValesBody.innerHTML += `
-                <tr class="border-b border-slate-800 hover:bg-slate-800/30">
-                    <td class="py-2.5 text-slate-400 text-xs">${horaSimplificada}</td>
-                    <td class="py-2.5 text-right font-semibold text-rose-400">-$${p.monto.toLocaleString()}</td>
-                </tr>
-            `;
-        });
-        if(misPrestamos.length === 0) {
-            tablaValesBody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-slate-500 italic">No tienes vales hoy</td></tr>`;
-        }
-
-        // RENDER VISTA ADMINISTRADOR
-        let lavadosAbiertosGlobal = esListaLavadosValida ? lavados.filter(l => l.estado === "Abierto") : [];
-        let cajaTotalGeneral = lavadosAbiertosGlobal.reduce((sum, l) => sum + l.valor, 0);
-        let nominaTotalGeneral = cajaTotalGeneral * 0.40;
-
-        document.getElementById('admin-caja-total').innerText = `$${cajaTotalGeneral.toLocaleString()}`;
-        document.getElementById('admin-nomina-total').innerText = `$${nominaTotalGeneral.toLocaleString()}`;
-
-        const listaEmpleados = ["Jesus", "Santiago", "Andres", "Carlos"]; 
-        const contenedorLiquidacion = document.getElementById('lista-liquidacion');
-        contenedorLiquidacion.innerHTML = ""; 
-
-        listaEmpleados.forEach(emp => {
-            let lavadosEmp = esListaLavadosValida ? lavados.filter(l => l.lavador === emp && l.estado === "Abierto") : [];
-            let totalEmp = lavadosEmp.reduce((sum, l) => sum + l.valor, 0) * 0.40;
-            
-            let prestamosEmp = esListaPrestamosValida ? prestamos.filter(p => p.lavador === emp) : [];
-            let totalPrestamosEmp = prestamosEmp.reduce((sum, p) => sum + p.monto, 0);
-            
-            let netoAPagar = totalEmp - totalPrestamosEmp;
-
-            contenedorLiquidacion.innerHTML += `
-                <div class="bg-slate-800 p-3 rounded-lg flex justify-between items-center border border-slate-700/50 mb-2">
-                    <div>
-                        <p class="font-bold text-white">${emp}</p>
-                        <p class="text-xs text-slate-400">40%: $${totalEmp.toLocaleString()} | Vales: $${totalPrestamosEmp.toLocaleString()}</p>
-                    </div>
-                    <span class="text-sm font-black ${netoAPagar >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-                        $${netoAPagar.toLocaleString()}
-                    </span>
+        <main id="vista-empleado" class="space-y-5 hidden">
+            <section class="grid grid-cols-3 gap-3">
+                <div class="bg-slate-900/90 p-3 rounded-xl text-center border border-slate-800">
+                    <p class="text-[10px] uppercase font-bold text-slate-500">Producido</p>
+                    <p id="total-producido" class="text-sm font-black text-white">$0</p>
                 </div>
-            `;
-        });
+                <div class="bg-emerald-500/5 p-3 rounded-xl text-center border border-emerald-500/10">
+                    <p class="text-[10px] uppercase font-bold text-emerald-500">Mi Ganancia (40%)</p>
+                    <p id="total-ganancia" class="text-sm font-black text-emerald-400">$0</p>
+                </div>
+                <div class="bg-rose-500/5 p-3 rounded-xl text-center border border-rose-500/10">
+                    <p class="text-[10px] uppercase font-bold text-rose-500">Vales</p>
+                    <p id="total-prestamos" class="text-sm font-black text-rose-400">$0</p>
+                </div>
+            </section>
 
-    } catch (error) {
-        console.error("Error al actualizar:", error);
-    }
-}
+            <section class="card-modulo bg-slate-900/90 p-5 rounded-xl shadow-md space-y-4 border border-slate-800">
+                <h2 class="text-lg font-bold text-slate-200">🚗 Registrar Nuevo Lavado</h2>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1">Vehículo / Tipo</label>
+                            <select id="tipo" class="w-full bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-sm focus:outline-none">
+                                <option value="15000">🏍️ Moto - $15.000</option>
+                                <option value="25000">🚗 Carro - $25.000</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1">Placa</label>
+                            <input id="placa" type="text" placeholder="ABC-123" class="w-full bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-sm font-mono focus:outline-none text-center font-bold">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1">Empleado Lavador</label>
+                        <select id="lavador" class="w-full bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-sm focus:outline-none">
+                            <option value="Jesus">Jesus</option>
+                            <option value="Santiago">Santiago</option>
+                            <option value="Andres">Andres</option>
+                            <option value="Carlos">Carlos</option>
+                        </select>
+                    </div>
+                    <button id="btn-registrar" class="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 font-bold text-slate-950 rounded-lg transition-transform active:scale-95 text-sm">
+                        Registrar Lavado
+                    </button>
+                </div>
+            </section>
 
-async function finalizarDia() {
-    if(confirm("¿Seguro que deseas finalizar el día?")) {
-        try {
-            const resLavados = await fetch(obtenerURLconFiltro(API_URL_LAVADOS));
-            const lavados = await resLavados.json();
+            <section class="grid grid-cols-2 gap-3">
+                <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+                    <h3 class="text-xs font-bold uppercase text-slate-400 mb-2">Vehículos Hoy</h3>
+                    <div class="max-h-40 overflow-y-auto">
+                        <table class="w-full text-xs">
+                            <tbody id="tabla-vehiculos-empleado"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+                    <h3 class="text-xs font-bold uppercase text-slate-400 mb-2">Vales Pedidos</h3>
+                    <div class="max-h-40 overflow-y-auto">
+                        <table class="w-full text-xs">
+                            <tbody id="tabla-vales-empleado"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
 
-            if (Array.isArray(lavados)) {
-                for (let lavado of lavados) {
-                    if (lavado.estado === "Abierto") {
-                        await fetch(`${API_URL_LAVADOS}/${lavado.id}`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ estado: "Finalizado" })
-                        });
-                    }
-                }
-            }
-            alert("🔒 Caja y día finalizados con éxito.");
-            actualizarPanel();
-        } catch (error) {
-            console.error("Error al cerrar el día:", error);
-        }
-    }
-}
+        <main id="vista-admin" class="space-y-5 hidden">
+            <section class="card-modulo bg-slate-900/90 p-5 rounded-xl shadow-md space-y-4 border border-slate-800">
+                <h2 class="text-lg font-bold text-slate-200">💰 Registrar Vale de Dinero</h2>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1">Lavador</label>
+                            <select id="lavador-vale" class="w-full bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-sm focus:outline-none">
+                                <option value="Jesus">Jesus</option>
+                                <option value="Santiago">Santiago</option>
+                                <option value="Andres">Andres</option>
+                                <option value="Carlos">Carlos</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-slate-500 mb-1">Monto ($)</label>
+                            <input id="monto-prestamo" type="number" placeholder="5000" class="w-full bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-sm focus:outline-none font-bold">
+                        </div>
+                    </div>
+                    <button id="btn-prestamo" class="w-full py-2.5 bg-rose-500 hover:bg-rose-400 font-bold text-slate-950 rounded-lg transition-transform active:scale-95 text-sm">
+                        Asignar Vale
+                    </button>
+                </div>
+            </section>
+
+            <section class="card-modulo bg-slate-900/90 p-5 rounded-xl shadow-md space-y-4 border border-slate-800">
+                <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
+                    🏦 Caja General
+                </h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-800/50 p-4 rounded-lg text-center border border-slate-700/50">
+                        <p class="text-xs text-slate-400">Recaudo Bruto</p>
+                        <p id="admin-caja-total" class="text-xl font-black text-white">$0</p>
+                    </div>
+                    <div class="bg-emerald-500/5 p-4 rounded-lg text-center border border-emerald-500/10">
+                        <p class="text-xs text-emerald-400">Total Nómina (40%)</p>
+                        <p id="admin-nomina-total" class="text-xl font-black text-emerald-400">$0</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card-modulo bg-slate-900/80 p-5 rounded-xl shadow-md space-y-3 border border-slate-800">
+                <h2 class="text-lg font-bold text-slate-200">👥 Liquidación del Personal</h2>
+                <div id="lista-liquidacion" class="space-y-2"></div>
+            </section>
+
+            <button id="btn-finalizar" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 py-3 rounded-lg text-slate-950 font-extrabold transition-transform active:scale-95 text-sm uppercase tracking-wide">
+                🔒 Finalizar y Cerrar Caja de Hoy
+            </button>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
